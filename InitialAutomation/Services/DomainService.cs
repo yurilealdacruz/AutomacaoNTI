@@ -22,24 +22,42 @@ namespace InitialAutomation.Services
                 !string.IsNullOrWhiteSpace(senha) &&
                 !string.IsNullOrWhiteSpace(dominio);
         }
-        public string MontarScriptRemocao(
-            string usuario,
-            string senha)
-                {
-                    return $@"
-        $secSenha = ConvertTo-SecureString '{senha}' -AsPlainText -Force
+                    public string MontarScriptRemocao(
+                        string usuario,
+                        string senha)
+                            {
+                                return $@"
+                    $secSenha = ConvertTo-SecureString '{senha}' -AsPlainText -Force
 
-        $cred = New-Object System.Management.Automation.PSCredential(
-            '{usuario}',
-            $secSenha
-        )
+                    $cred = New-Object System.Management.Automation.PSCredential(
+                        '{usuario}',
+                        $secSenha
+                    )
 
-        Remove-Computer `
-            -UnjoinDomainCredential $cred `
-            -WorkgroupName 'WORKGROUP' `
-            -Force
-        ";
-                }
+                    Remove-Computer `
+                        -UnjoinDomainCredential $cred `
+                        -WorkgroupName 'WORKGROUP' `
+                        -Force
+                    ";
+                            }
+
+                    public string VerificarNomeComputador(string nomePc)
+                    {
+                        string script = $@"
+            try
+            {{
+                Get-ADComputer -Identity '{nomePc}' -ErrorAction Stop
+
+                'EXISTE'
+            }}
+            catch
+            {{
+                'NAO_EXISTE'
+            }}
+            ";
+
+                        return ExecutePowerShell(script).Trim();
+                    }
         public DomainInfo ObterInformacoes()
         {
             return new DomainInfo
@@ -58,35 +76,50 @@ namespace InitialAutomation.Services
             };
         }
         public string RemoverDominio(
-            string usuario,
-            string senha)
-                {
-                    try
-                    {
-                        string script = $@"
-        $secSenha = ConvertTo-SecureString '{senha}' -AsPlainText -Force
+       string usuario,
+       string senha)
+        {
+            string script = $@"
+$sysInfo = Get-CimInstance Win32_ComputerSystem
 
-        $cred = New-Object System.Management.Automation.PSCredential(
-            '{usuario}',
-            $secSenha
-        )
+$nomeAtual = $env:COMPUTERNAME
 
-        Write-Output 'Remoção simulada com sucesso'"
-        /* Write-Output 'Remove-Computer `
-            -UnjoinDomainCredential $cred `
-            -WorkgroupName 'WORKGROUP' `
-            -Force' */
+if ($sysInfo.PartOfDomain -and $sysInfo.Domain -eq '{{dominio}}')
+{{
+    if ($nomeAtual -ne '{{nomePc}}')
+    {{
+        Rename-Computer `
+            -NewName '{{nomePc}}' `
+            -DomainCredential $cred `
+            -Force
+    }}
 
-        ;
+    Write-Output 'Computador ja esta no dominio.'
+}}
+else
+{{
+    if ($nomeAtual -eq '{{nomePc}}')
+    {{
+        Add-Computer `
+            -DomainName '{{dominio}}' `
+            -Credential $cred `
+            -Force
+    }}
+    else
+    {{
+        Add-Computer `
+            -DomainName '{{dominio}}' `
+            -NewName '{{nomePc}}' `
+            -Credential $cred `
+            -Force
+    }}
+}}
 
-                return ExecutePowerShell(script);
-                    }
-                    catch (Exception ex)
-                    {
-                        return ex.Message;
-                    }
-                }
+Write-Output 'Operacao concluida.'
+";
 
+            return ExecutePowerShell(script);
+        }
         public string ObterUsuariosLocais()
         {
             return ExecutePowerShell(
@@ -108,42 +141,70 @@ namespace InitialAutomation.Services
         }
         public string ObterInformacoesDominio()
         {
-            return ExecutePowerShell(
-                "(Get-CimInstance Win32_ComputerSystem).Domain"
-            );
-        }
+                        return ExecutePowerShell(
+                            "(Get-CimInstance Win32_ComputerSystem).Domain"
+                        );
+                    }
 
-        public void IngressarDominio(
-            string nomePc,
-            string usuario,
-            string senha,
-            string dominio)
-                {
-                    string script = $@"
-                $secSenha = ConvertTo-SecureString '{senha}' -AsPlainText -Force
-                $cred = New-Object System.Management.Automation.PSCredential(
-                    '{dominio}\{usuario}',
-                    $secSenha
-                )
+                    public string IngressarDominio(
+                 string nomePc,
+                 string usuario,
+                 string senha,
+                 string dominio)
+                    {
+                        try
+                        {
+                            string script = $@"
+            $secSenha = ConvertTo-SecureString '{senha}' -AsPlainText -Force
 
+            $cred = New-Object System.Management.Automation.PSCredential(
+                '{dominio}\{usuario}',
+                $secSenha
+            )
+
+            $sysInfo = Get-CimInstance Win32_ComputerSystem
+
+            if ($sysInfo.PartOfDomain -and $sysInfo.Domain -eq '{dominio}')
+            {{
+                Rename-Computer `
+                    -NewName '{nomePc}' `
+                    -DomainCredential $cred `
+                    -Force
+            }}
+            else
+            {{
                 Add-Computer `
                     -DomainName '{dominio}' `
                     -NewName '{nomePc}' `
                     -Credential $cred `
                     -Force
+            }}
+
+            'Operacao concluida. Reinicie o computador.'
             ";
 
-                    ExecutePowerShell(script);
-                }
+                            return ExecutePowerShell(script);
+                        }
+                        catch (Exception ex)
+                        {
+                            return ex.Message;
+                        }
+                    }
         public string ExecutePowerShell(string command)
         {
             ProcessStartInfo psi = new()
             {
                 FileName = "powershell.exe",
                 Arguments = $"-ExecutionPolicy Bypass -Command \"{command}\"",
+
+                UseShellExecute = false,
+
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
-                UseShellExecute = false,
+
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8,
+
                 CreateNoWindow = true
             };
 

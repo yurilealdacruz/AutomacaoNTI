@@ -31,8 +31,8 @@
             lblBanner = new Label();
             btnVerificarAtualizacao = new Button();
             grpDominio = new GroupBox();
-            btnUsuariosLocais = new Button();
-            button1 = new Button();
+            btnLimparUsuarios = new Button();
+            btnRemoverDominio = new Button();
             btnSalvar = new Button();
             btnAdicionarDominio = new Button();
             chkLembrarSenha = new CheckBox();
@@ -58,7 +58,6 @@
             lblBanner.Size = new Size(266, 34);
             lblBanner.TabIndex = 0;
             lblBanner.Text = "yurilealdacruz.github.io\nAutomação de Configuração de Máquinas";
-            lblBanner.Click += label1_Click;
             // 
             // btnVerificarAtualizacao
             // 
@@ -72,8 +71,8 @@
             // 
             // grpDominio
             // 
-            grpDominio.Controls.Add(btnUsuariosLocais);
-            grpDominio.Controls.Add(button1);
+            grpDominio.Controls.Add(btnLimparUsuarios);
+            grpDominio.Controls.Add(btnRemoverDominio);
             grpDominio.Controls.Add(btnSalvar);
             grpDominio.Controls.Add(btnAdicionarDominio);
             grpDominio.Controls.Add(chkLembrarSenha);
@@ -85,32 +84,32 @@
             grpDominio.Controls.Add(label3);
             grpDominio.Controls.Add(label2);
             grpDominio.Controls.Add(label1);
-            grpDominio.Location = new Point(20, 140);
+            grpDominio.Location = new Point(20, 109);
             grpDominio.Name = "grpDominio";
-            grpDominio.Size = new Size(490, 231);
+            grpDominio.Size = new Size(490, 279);
             grpDominio.TabIndex = 2;
             grpDominio.TabStop = false;
             grpDominio.Text = "Configurações de Domínio e Nome";
             // 
-            // btnUsuariosLocais
+            // btnLimparUsuarios
             // 
-            btnUsuariosLocais.Location = new Point(304, 202);
-            btnUsuariosLocais.Name = "btnUsuariosLocais";
-            btnUsuariosLocais.Size = new Size(144, 23);
-            btnUsuariosLocais.TabIndex = 6;
-            btnUsuariosLocais.Text = "Limpar Usuários";
-            btnUsuariosLocais.UseVisualStyleBackColor = true;
-            btnUsuariosLocais.Click += btnUsuariosLocais_Click;
+            btnLimparUsuarios.Location = new Point(304, 204);
+            btnLimparUsuarios.Name = "btnLimparUsuarios";
+            btnLimparUsuarios.Size = new Size(144, 23);
+            btnLimparUsuarios.TabIndex = 11;
+            btnLimparUsuarios.Text = "Limpar Usuários";
+            btnLimparUsuarios.UseVisualStyleBackColor = true;
+            btnLimparUsuarios.Click += btnLimparUsuarios_Click;
             // 
-            // button1
+            // btnRemoverDominio
             // 
-            button1.Location = new Point(304, 175);
-            button1.Name = "button1";
-            button1.Size = new Size(144, 23);
-            button1.TabIndex = 10;
-            button1.Text = "Remover Domínio";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += button1_Click;
+            btnRemoverDominio.Location = new Point(304, 175);
+            btnRemoverDominio.Name = "btnRemoverDominio";
+            btnRemoverDominio.Size = new Size(144, 23);
+            btnRemoverDominio.TabIndex = 10;
+            btnRemoverDominio.Text = "Remover Domínio";
+            btnRemoverDominio.UseVisualStyleBackColor = true;
+            btnRemoverDominio.Click += btnRemoverDominio_Click;
             // 
             // btnSalvar
             // 
@@ -188,7 +187,6 @@
             label3.Size = new Size(108, 15);
             label3.TabIndex = 2;
             label3.Text = "Senha do Domínio:";
-            label3.Click += label3_Click;
             // 
             // label2
             // 
@@ -207,7 +205,6 @@
             label1.Size = new Size(110, 15);
             label1.TabIndex = 0;
             label1.Text = "Novo Nome do PC:";
-            label1.Click += label1_Click_1;
             // 
             // label5
             // 
@@ -217,7 +214,6 @@
             label5.Size = new Size(105, 15);
             label5.TabIndex = 4;
             label5.Text = "Log de Operações:";
-            label5.Click += label5_Click;
             // 
             // rtbLog
             // 
@@ -246,7 +242,6 @@
             Name = "MainForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Automação";
-            Load += MainForm_Load;
             grpDominio.ResumeLayout(false);
             grpDominio.PerformLayout();
             ResumeLayout(false);
@@ -267,11 +262,11 @@
         private Label label2;
         private Label label1;
         private CheckBox chkLembrarSenha;
-        private Button button1;
+        private Button btnRemoverDominio;
         private Button btnAdicionarDominio;
         private Button btnSalvar;
         private Label label5;
         private RichTextBox rtbLog;
-        private Button btnUsuariosLocais;
+        private Button btnLimparUsuarios;
     }
 }

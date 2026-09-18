@@ -11,6 +11,7 @@ public partial class MainForm : Form
         CarregarConfig();
     }
     private readonly DomainService domainService = new();
+    private readonly UserService userService = new();
 
     private void Log(string mensagem)
     {
@@ -99,31 +100,6 @@ public partial class MainForm : Form
         }
     }
 
-    private void label1_Click(object sender, EventArgs e)
-    {
-
-    }
-
-    private void label1_Click_1(object sender, EventArgs e)
-    {
-
-    }
-
-    private void label3_Click(object sender, EventArgs e)
-    {
-
-    }
-
-    private void label5_Click(object sender, EventArgs e)
-    {
-
-    }
-
-    private void MainForm_Load(object sender, EventArgs e)
-    {
-
-    }
-
     private void btnVerificarAtualizacao_Click(object sender, EventArgs e)
     {
         Log("Verificando atualizações...");
@@ -157,38 +133,76 @@ public partial class MainForm : Form
         }
         var info = domainService.ObterInformacoes();
 
-        Log($"Nome atual: {info.Hostname}");
-        Log($"Domínio atual: {info.Domain}");
-        Log($"Está em domínio? {(info.PartOfDomain ? "Sim" : "Não")}");
+        DialogResult resposta =
+            MessageBox.Show(
+                $"Nome atual: {info.Hostname}\n" +
+                $"Domínio atual: {info.Domain}\n\n" +
+                $"Deseja ingressar no domínio {txtDominio.Text} ?",
+                "Confirmação",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+        if (resposta != DialogResult.Yes)
+        {
+            return;
+        }
+
+        string existe =
+            domainService.VerificarNomeComputador(
+                txtNomePc.Text
+            );
+
+                if (existe == "EXISTE")
+                {
+                    MessageBox.Show(
+                        "Já existe um computador com esse patrimônio.",
+                        "Aviso",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+
+                    return;
+                }
+
+        string retorno = domainService.IngressarDominio(
+            txtNomePc.Text,
+            txtUsuario.Text,
+            txtSenha.Text,
+            txtDominio.Text
+        );
+
+        Log(retorno);
 
     }
 
-    private void button1_Click(object sender, EventArgs e)
+    private void btnRemoverDominio_Click(object sender, EventArgs e)
     {
+        var info = domainService.ObterInformacoes();
+
         DialogResult resultado =
             MessageBox.Show(
+                $"Nome atual: {info.Hostname}\n" +
+                $"Domínio atual: {info.Domain}\n\n" +
                 "Deseja realmente remover este computador do domínio?",
                 "Confirmação",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning);
 
-        if (resultado == DialogResult.Yes)
+        if (resultado != DialogResult.Yes)
         {
-            string retorno = domainService.RemoverDominio(
-                txtUsuario.Text,
-                txtSenha.Text);
-
-            Log(retorno);
+            return;
         }
-        Log("Script de remoção gerado:");
 
+        string retorno = domainService.RemoverDominio(
+            txtUsuario.Text,
+            txtSenha.Text);
+
+        Log(retorno);
     }
 
     private void btnUsuariosLocais_Click(object sender, EventArgs e)
     {
 
-        var usuarios =
-            domainService.ObterListaUsuarios();
+        var usuarios = userService.ObterUsuarios();
 
         Log($"Total de usuários: {usuarios.Count}");
 
@@ -206,5 +220,35 @@ public partial class MainForm : Form
     private void checkBox1_CheckedChanged(object sender, EventArgs e)
     {
 
+    }
+
+    private void btnLimparUsuarios_Click(
+        object sender,
+        EventArgs e)
+    {
+        var resultado =
+            userService.ObterUsuariosQueSeriamDesabilitados();
+
+        Log($"Usuários encontrados: {resultado.TotalUsuarios}");
+
+        foreach (var usuario in resultado.UsuariosAfetados)
+        {
+            Log($"Será desabilitado: {usuario}");
+        }
+        DialogResult resposta =
+    MessageBox.Show(
+        $"Deseja desabilitar {resultado.TotalUsuarios} usuário(s)?",
+        "Confirmação",
+        MessageBoxButtons.YesNo,
+        MessageBoxIcon.Warning);
+
+        if (resposta != DialogResult.Yes)
+        {
+            return;
+        }
+        string retorno =
+    userService.LimparUsuarios();
+
+        Log(retorno);
     }
 }
